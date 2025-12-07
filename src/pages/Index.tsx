@@ -167,7 +167,7 @@ const Index = () => {
       <footer className="glass-strong border-t border-border/30 px-6 py-4 mt-auto">
         <div className="flex flex-col md:flex-row items-center justify-between gap-2 text-xs text-muted-foreground">
           <p>Live Data Source: Irrigation Department, Sri Lanka (ArcGIS Services)</p>
-          <p>© 2025 Hydrology & Disaster Management Division</p>
+          <p>© 2025 Hydrology & Disaster Management Division | Developed by: Homerelieflk.org</p>
         </div>
       </footer>
     </div>
