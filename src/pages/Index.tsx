@@ -6,6 +6,7 @@ import { LiveWaterLevelCard } from "@/components/dashboard/LiveWaterLevelCard";
 import { LiveWaterLevelChart } from "@/components/dashboard/LiveWaterLevelChart";
 import { LiveAlertFeed } from "@/components/dashboard/LiveAlertFeed";
 import { LiveStatsOverview } from "@/components/dashboard/LiveStatsOverview";
+import { StationMap } from "@/components/dashboard/StationMap";
 import { useLiveWaterData, LiveRiverBasin, LiveStation } from "@/hooks/useLiveWaterData";
 import { Loader2, RefreshCw, WifiOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -65,7 +66,7 @@ const Index = () => {
     <div className="min-h-screen flex flex-col">
       <Header />
       
-      <main className="flex-1 p-4 lg:p-6 space-y-6">
+      <main className="flex-1 p-4 lg:p-6 space-y-4">
         {/* Stats Overview */}
         <LiveStatsOverview stations={data?.stations || []} isLoading={isLoading} />
         
@@ -80,7 +81,7 @@ const Index = () => {
               onStationChange={setSelectedStation}
             />
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 flex-wrap">
             <AlertLegend 
               activeFilter={alertFilter} 
               onFilterChange={setAlertFilter} 
@@ -110,23 +111,37 @@ const Index = () => {
 
         {/* Main Content Grid */}
         {data && (
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-            {/* Chart and Cards Section */}
-            <div className="xl:col-span-2 space-y-6">
-              {/* Chart */}
-              {selectedStation ? (
-                <LiveWaterLevelChart station={selectedStation} />
-              ) : displayStations.length > 0 ? (
-                <LiveWaterLevelChart station={displayStations[0]} />
-              ) : (
-                <div className="glass rounded-xl p-8 flex items-center justify-center h-[350px]">
-                  <p className="text-muted-foreground">Select a station to view water level data</p>
+          <div className="grid grid-cols-1 xl:grid-cols-12 gap-4">
+            {/* Left Column - Map and Chart */}
+            <div className="xl:col-span-8 space-y-4">
+              {/* Map and Chart Row */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {/* Map */}
+                <div className="h-[350px]">
+                  <StationMap
+                    stations={data.stations}
+                    selectedStation={selectedStation}
+                    onStationClick={handleStationClick}
+                  />
                 </div>
-              )}
+                
+                {/* Chart */}
+                <div className="h-[350px]">
+                  {selectedStation ? (
+                    <LiveWaterLevelChart station={selectedStation} />
+                  ) : displayStations.length > 0 ? (
+                    <LiveWaterLevelChart station={displayStations[0]} />
+                  ) : (
+                    <div className="glass rounded-xl p-8 flex items-center justify-center h-full">
+                      <p className="text-muted-foreground">Select a station to view water level data</p>
+                    </div>
+                  )}
+                </div>
+              </div>
               
               {/* Station Cards Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {displayStations.map((station, index) => (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {displayStations.slice(0, 6).map((station, index) => (
                   <div
                     key={station.id}
                     className="animate-fade-in"
@@ -141,6 +156,25 @@ const Index = () => {
                 ))}
               </div>
 
+              {/* Show more cards if filtered */}
+              {displayStations.length > 6 && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {displayStations.slice(6).map((station, index) => (
+                    <div
+                      key={station.id}
+                      className="animate-fade-in"
+                      style={{ animationDelay: `${(index + 6) * 50}ms` }}
+                    >
+                      <LiveWaterLevelCard
+                        station={station}
+                        onClick={() => handleStationClick(station)}
+                        isSelected={selectedStation?.id === station.id}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+
               {displayStations.length === 0 && !isLoading && (
                 <div className="glass rounded-xl p-8 text-center">
                   <p className="text-muted-foreground">
@@ -150,21 +184,23 @@ const Index = () => {
               )}
             </div>
             
-            {/* Alert Feed Sidebar */}
-            <div className="xl:col-span-1 h-[700px]">
-              <LiveAlertFeed 
-                stations={data.stations}
-                onStationClick={handleStationClick}
-                isLoading={isLoading}
-                lastUpdated={dataUpdatedAt ? new Date(dataUpdatedAt) : undefined}
-              />
+            {/* Right Column - Alert Feed */}
+            <div className="xl:col-span-4">
+              <div className="h-[calc(100vh-320px)] min-h-[500px] sticky top-4">
+                <LiveAlertFeed 
+                  stations={data.stations}
+                  onStationClick={handleStationClick}
+                  isLoading={isLoading}
+                  lastUpdated={dataUpdatedAt ? new Date(dataUpdatedAt) : undefined}
+                />
+              </div>
             </div>
           </div>
         )}
       </main>
       
       {/* Footer */}
-      <footer className="glass-strong border-t border-border/30 px-6 py-4 mt-auto">
+      <footer className="glass-strong border-t border-border/30 px-6 py-3 mt-auto">
         <div className="flex flex-col md:flex-row items-center justify-between gap-2 text-xs text-muted-foreground">
           <p>Live Data Source: Irrigation Department, Sri Lanka (ArcGIS Services)</p>
           <p>© 2025 Hydrology & Disaster Management Division | Developed by: Homerelieflk.org</p>
