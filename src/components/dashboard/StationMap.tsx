@@ -1,10 +1,10 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { LiveStation } from '@/hooks/useLiveWaterData';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Map, Key } from 'lucide-react';
+import { Map } from 'lucide-react';
+
+const MAPBOX_TOKEN = 'pk.eyJ1Ijoic3VraXRoYTI3IiwiYSI6ImNtaWp6bnc3NzEzZDIzanNmY2ZyYzd5cHYifQ.XuOERurYe_jUp3QM8j4cag';
 
 interface StationMapProps {
   stations: LiveStation[];
@@ -27,29 +27,16 @@ export const StationMap: React.FC<StationMapProps> = ({
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markersRef = useRef<mapboxgl.Marker[]>([]);
-  const [mapboxToken, setMapboxToken] = useState<string>(() => {
-    return localStorage.getItem('mapbox_token') || '';
-  });
-  const [showTokenInput, setShowTokenInput] = useState(!mapboxToken);
-  const [tokenInput, setTokenInput] = useState('');
-
-  const handleTokenSubmit = () => {
-    if (tokenInput.trim()) {
-      localStorage.setItem('mapbox_token', tokenInput.trim());
-      setMapboxToken(tokenInput.trim());
-      setShowTokenInput(false);
-    }
-  };
 
   useEffect(() => {
-    if (!mapContainer.current || !mapboxToken) return;
+    if (!mapContainer.current) return;
 
-    mapboxgl.accessToken = mapboxToken;
+    mapboxgl.accessToken = MAPBOX_TOKEN;
 
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
       style: 'mapbox://styles/mapbox/dark-v11',
-      center: [80.5, 7.5], // Center of Sri Lanka
+      center: [80.5, 7.5],
       zoom: 7,
       pitch: 30,
     });
@@ -59,16 +46,18 @@ export const StationMap: React.FC<StationMapProps> = ({
       'top-right'
     );
 
+    map.current.addControl(new mapboxgl.FullscreenControl(), 'top-right');
+
     return () => {
       markersRef.current.forEach(marker => marker.remove());
       markersRef.current = [];
       map.current?.remove();
     };
-  }, [mapboxToken]);
+  }, []);
 
   // Update markers when stations change
   useEffect(() => {
-    if (!map.current || !mapboxToken) return;
+    if (!map.current) return;
 
     // Remove existing markers
     markersRef.current.forEach(marker => marker.remove());
@@ -127,7 +116,7 @@ export const StationMap: React.FC<StationMapProps> = ({
 
       markersRef.current.push(marker);
     });
-  }, [stations, selectedStation, onStationClick, mapboxToken]);
+  }, [stations, selectedStation, onStationClick]);
 
   // Fly to selected station
   useEffect(() => {
@@ -139,42 +128,6 @@ export const StationMap: React.FC<StationMapProps> = ({
       duration: 1500,
     });
   }, [selectedStation]);
-
-  if (showTokenInput) {
-    return (
-      <div className="glass rounded-xl p-6 h-full flex flex-col items-center justify-center gap-4">
-        <div className="text-center space-y-2">
-          <Map className="w-12 h-12 text-primary mx-auto" />
-          <h3 className="font-display font-semibold text-foreground">Map Visualization</h3>
-          <p className="text-sm text-muted-foreground max-w-sm">
-            Enter your Mapbox public token to display an interactive map of station locations.
-            Get your token from{' '}
-            <a 
-              href="https://mapbox.com" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-primary hover:underline"
-            >
-              mapbox.com
-            </a>
-          </p>
-        </div>
-        <div className="flex gap-2 w-full max-w-md">
-          <Input
-            type="text"
-            placeholder="pk.eyJ1..."
-            value={tokenInput}
-            onChange={(e) => setTokenInput(e.target.value)}
-            className="flex-1"
-          />
-          <Button onClick={handleTokenSubmit} disabled={!tokenInput.trim()}>
-            <Key className="w-4 h-4 mr-2" />
-            Set Token
-          </Button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="glass rounded-xl overflow-hidden h-full relative">
@@ -198,16 +151,6 @@ export const StationMap: React.FC<StationMapProps> = ({
           ))}
         </div>
       </div>
-      <button
-        onClick={() => {
-          localStorage.removeItem('mapbox_token');
-          setMapboxToken('');
-          setShowTokenInput(true);
-        }}
-        className="absolute top-3 right-12 glass-strong rounded-lg px-2 py-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
-      >
-        Change Token
-      </button>
     </div>
   );
 };
