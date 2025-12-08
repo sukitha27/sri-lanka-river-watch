@@ -78,6 +78,19 @@ export async function fetchLiveGaugeData(): Promise<ArcGISFeature<GaugeReading>[
   });
 }
 
+export async function fetchHistoricalGaugeData(
+  stationName: string,
+  hoursBack: number = 48
+): Promise<ArcGISFeature<GaugeReading>[]> {
+  const cutoffTime = Date.now() - hoursBack * 60 * 60 * 1000;
+  
+  return queryFeatures<GaugeReading>(API_ENDPOINTS.GAUGES, {
+    where: `gauge = '${stationName}' AND CreationDate >= ${cutoffTime}`,
+    resultRecordCount: '500',
+    orderByFields: 'CreationDate ASC',
+  });
+}
+
 export async function fetchHydroStations(): Promise<ArcGISFeature<HydroStation>[]> {
   return queryFeatures<HydroStation>(API_ENDPOINTS.HYDROSTATIONS, {
     resultRecordCount: '200',

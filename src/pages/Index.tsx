@@ -4,6 +4,7 @@ import { LiveStationSelector } from "@/components/dashboard/LiveStationSelector"
 import { AlertLegend } from "@/components/dashboard/AlertLegend";
 import { LiveWaterLevelCard } from "@/components/dashboard/LiveWaterLevelCard";
 import { LiveWaterLevelChart } from "@/components/dashboard/LiveWaterLevelChart";
+import { HistoricalTrendChart } from "@/components/dashboard/HistoricalTrendChart";
 import { LiveAlertFeed } from "@/components/dashboard/LiveAlertFeed";
 import { LiveStatsOverview } from "@/components/dashboard/LiveStatsOverview";
 import { StationMap } from "@/components/dashboard/StationMap";
@@ -114,7 +115,7 @@ const Index = () => {
           <div className="grid grid-cols-1 xl:grid-cols-12 gap-4">
             {/* Left Column - Map and Chart */}
             <div className="xl:col-span-8 space-y-4">
-              {/* Map and Chart Row */}
+              {/* Map and Current Level Row */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 {/* Map */}
                 <div className="h-[350px]">
@@ -125,7 +126,7 @@ const Index = () => {
                   />
                 </div>
                 
-                {/* Chart */}
+                {/* Current Level Chart */}
                 <div className="h-[350px]">
                   {selectedStation ? (
                     <LiveWaterLevelChart station={selectedStation} />
@@ -137,6 +138,19 @@ const Index = () => {
                     </div>
                   )}
                 </div>
+              </div>
+
+              {/* Historical Trend Chart */}
+              <div className="h-[300px]">
+                {selectedStation ? (
+                  <HistoricalTrendChart station={selectedStation} />
+                ) : displayStations.length > 0 ? (
+                  <HistoricalTrendChart station={displayStations[0]} />
+                ) : (
+                  <div className="glass rounded-xl p-8 flex items-center justify-center h-full">
+                    <p className="text-muted-foreground">Select a station to view historical trends</p>
+                  </div>
+                )}
               </div>
               
               {/* Station Cards Grid */}
