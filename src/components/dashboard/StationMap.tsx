@@ -69,39 +69,65 @@ export const StationMap: React.FC<StationMapProps> = ({
 
       const el = document.createElement('div');
       el.className = 'station-marker';
+      
+      const isSelected = selectedStation?.id === station.id;
+      const size = isSelected ? 20 : 14;
+      
       el.style.cssText = `
-        width: 16px;
-        height: 16px;
+        width: ${size}px;
+        height: ${size}px;
         border-radius: 50%;
         background: ${STATUS_COLORS[station.status]};
         border: 2px solid white;
-        box-shadow: 0 0 10px ${STATUS_COLORS[station.status]}80;
+        box-shadow: 0 0 ${isSelected ? 20 : 10}px ${STATUS_COLORS[station.status]}${isSelected ? '' : '80'};
         cursor: pointer;
-        transition: transform 0.2s, box-shadow 0.2s;
+        transition: box-shadow 0.2s ease;
       `;
 
-      if (selectedStation?.id === station.id) {
-        el.style.transform = 'scale(1.5)';
-        el.style.boxShadow = `0 0 20px ${STATUS_COLORS[station.status]}`;
-      }
-
       el.addEventListener('mouseenter', () => {
-        el.style.transform = 'scale(1.3)';
+        el.style.boxShadow = `0 0 20px ${STATUS_COLORS[station.status]}, 0 0 30px ${STATUS_COLORS[station.status]}60`;
       });
       el.addEventListener('mouseleave', () => {
-        if (selectedStation?.id !== station.id) {
-          el.style.transform = 'scale(1)';
-        }
+        el.style.boxShadow = `0 0 ${isSelected ? 20 : 10}px ${STATUS_COLORS[station.status]}${isSelected ? '' : '80'}`;
       });
 
-      const popup = new mapboxgl.Popup({ offset: 25, closeButton: false })
+      const statusLabel = station.status === 'minor' ? 'Minor Flood' : station.status === 'major' ? 'Major Flood' : station.status.charAt(0).toUpperCase() + station.status.slice(1);
+      
+      const popup = new mapboxgl.Popup({ offset: 15, closeButton: false, className: 'station-popup' })
         .setHTML(`
-          <div style="padding: 8px; color: #fff; background: #1a1a2e; border-radius: 8px;">
-            <div style="font-weight: 600; margin-bottom: 4px;">${station.name}</div>
-            <div style="font-size: 12px; opacity: 0.8;">${station.basinName}</div>
-            <div style="font-size: 14px; font-weight: 600; color: ${STATUS_COLORS[station.status]}; margin-top: 4px;">
-              ${station.currentLevel.toFixed(2)}m
+          <div style="
+            padding: 12px 16px;
+            color: #fff;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+            min-width: 180px;
+          ">
+            <div style="font-weight: 700; font-size: 14px; margin-bottom: 6px; color: #fff;">${station.name}</div>
+            <div style="font-size: 11px; color: rgba(255,255,255,0.6); margin-bottom: 10px;">${station.basinName}</div>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.1);">
+              <div>
+                <div style="font-size: 10px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.5px;">Water Level</div>
+                <div style="font-size: 18px; font-weight: 700; color: ${STATUS_COLORS[station.status]};">${station.currentLevel.toFixed(2)}m</div>
+              </div>
+              <div style="
+                padding: 4px 10px;
+                border-radius: 20px;
+                font-size: 10px;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                background: ${STATUS_COLORS[station.status]}20;
+                color: ${STATUS_COLORS[station.status]};
+                border: 1px solid ${STATUS_COLORS[station.status]}40;
+              ">${statusLabel}</div>
             </div>
+            ${station.rainfall > 0 ? `
+              <div style="margin-top: 8px; font-size: 11px; color: rgba(255,255,255,0.7);">
+                🌧️ Rainfall: ${station.rainfall.toFixed(1)}mm
+              </div>
+            ` : ''}
           </div>
         `);
 
