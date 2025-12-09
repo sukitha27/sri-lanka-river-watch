@@ -8,6 +8,7 @@ import { HistoricalTrendChart } from "@/components/dashboard/HistoricalTrendChar
 import { LiveAlertFeed } from "@/components/dashboard/LiveAlertFeed";
 import { LiveStatsOverview } from "@/components/dashboard/LiveStatsOverview";
 import { StationMap } from "@/components/dashboard/StationMap";
+import { WeatherForecast } from "@/components/dashboard/WeatherForecast";
 import { useLiveWaterData, LiveRiverBasin, LiveStation } from "@/hooks/useLiveWaterData";
 import { Loader2, RefreshCw, WifiOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -140,17 +141,29 @@ const Index = () => {
                 </div>
               </div>
 
-              {/* Historical Trend Chart */}
-              <div className="h-[300px]">
-                {selectedStation ? (
-                  <HistoricalTrendChart station={selectedStation} />
-                ) : displayStations.length > 0 ? (
-                  <HistoricalTrendChart station={displayStations[0]} />
-                ) : (
-                  <div className="glass rounded-xl p-8 flex items-center justify-center h-full">
-                    <p className="text-muted-foreground">Select a station to view historical trends</p>
-                  </div>
-                )}
+              {/* Historical Trend Chart and Weather Forecast Row */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {/* Historical Trend Chart */}
+                <div className="h-[350px]">
+                  {selectedStation ? (
+                    <HistoricalTrendChart station={selectedStation} />
+                  ) : displayStations.length > 0 ? (
+                    <HistoricalTrendChart station={displayStations[0]} />
+                  ) : (
+                    <div className="glass rounded-xl p-8 flex items-center justify-center h-full">
+                      <p className="text-muted-foreground">Select a station to view historical trends</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Weather Forecast */}
+                <div className="h-[350px]">
+                  <WeatherForecast
+                    latitude={selectedStation?.latitude}
+                    longitude={selectedStation?.longitude}
+                    stationName={selectedStation?.name}
+                  />
+                </div>
               </div>
               
               {/* Station Cards Grid */}
